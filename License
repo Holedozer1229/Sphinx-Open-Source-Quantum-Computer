@@ -1,0 +1,11 @@
+### Explanation
+
+1. **Introduction**: Provides an overview of the project and its key features.
+2. **Installation**: Instructions to clone the repository, create a virtual environment, and install dependencies.
+3. **Usage**: How to run the main simulation script.
+4. **Components**: Describes the quantum circuit setup, virtual photon propagation, and hardware integration.
+5. **Simulation Details**: Includes examples of the quantum circuit and virtual photon propagation.
+6. **Contributing**: Encourages contributions and provides guidelines.
+7. **License**: Information about the project's license.
+
+This README file is designed to give users a clear understanding of the Sphinx Quantum Computer project and how to get started with it. If you have any specific requirements or need further adjustments, feel free to ask!
