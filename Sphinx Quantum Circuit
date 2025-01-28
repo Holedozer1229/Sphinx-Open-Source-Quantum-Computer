@@ -1,0 +1,48 @@
+import numpy as np
+import matplotlib.pyplot as plt
+from qiskit import QuantumCircuit, QuantumRegister, ClassicalRegister, Aer, transpile, assemble, execute
+from qiskit.visualization import plot_histogram
+
+# Constants
+NUM_QUBITS = 16  # Number of qubits representing virtual photons
+OMEGA = 1.0  # Frequency for phase shift
+
+# Create Quantum Registers
+qr = QuantumRegister(NUM_QUBITS, 'q')
+cr = ClassicalRegister(NUM_QUBITS, 'c')
+
+# Define the Quantum Circuit
+sphinx_circuit = QuantumCircuit(qr, cr)
+
+# Initialize Quantum Walk (Coin Operator)
+for i in range(NUM_QUBITS):
+    sphinx_circuit.h(qr[i])  # Apply Hadamard to initialize superposition
+
+# Induce Phase Shifts to Simulate Temporal Displacement
+for i in range(NUM_QUBITS):
+    sphinx_circuit.rz(OMEGA * (i / NUM_QUBITS) * 2 * np.pi, qr[i])  # Phase shift for temporal displacement
+
+# Temporal Entanglement (Controlled Gates)
+for i in range(NUM_QUBITS - 1):
+    sphinx_circuit.cx(qr[i], qr[i + 1])  # Entangle qubits to synchronize states
+
+# Base Anchor Point in Time
+anchor_index = 0
+sphinx_circuit.x(qr[anchor_index])  # Set base anchor point in time
+
+# Measurement
+sphinx_circuit.measure(qr, cr)  # Measure all qubits into classical register
+
+# Quantum Processor Simulation
+simulator = Aer.get_backend('qasm_simulator')
+compiled_circuit = transpile(sphinx_circuit, simulator)
+qobj = assemble(compiled_circuit)
+result = execute(sphinx_circuit, backend=simulator, shots=1024).result()
+
+# Get the measurement results
+counts = result.get_counts(sphinx_circuit)
+print("Measurement Results: ", counts)
+
+# Visualize the results
+plot_histogram(counts)
+plt.show()
