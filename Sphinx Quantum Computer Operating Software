@@ -1,0 +1,170 @@
+import numpy as np
+import matplotlib.pyplot as plt
+from qiskit import QuantumCircuit, QuantumRegister, ClassicalRegister, Aer, transpile, assemble, execute
+from qiskit.visualization import plot_histogram
+from mpl_toolkits.mplot3d import Axes3D
+
+# Constants
+NUM_GATES = 16
+NUM_QUBITS_PER_TARGET = 16
+NUM_QUBITS = NUM_GATES * NUM_QUBITS_PER_TARGET
+NUM_STEPS = 100
+DT = 0.1  # Time step
+OMEGA = 1.0  # Frequency for phase shift
+GOLDEN_RATIO = (1 + np.sqrt(5)) / 2
+
+# Quantum Circuit Setup with Qiskit
+
+# Create Quantum Registers
+qr = QuantumRegister(NUM_QUBITS, 'q')  # Quantum register for 16 targets each with 16 quantum dots
+anc = QuantumRegister(NUM_GATES, 'anc')  # Ancilla qubits for intermediate calculations
+cr = ClassicalRegister(NUM_QUBITS, 'c')  # Classical register for measurement results
+
+# Define the Quantum Circuit
+sphinx_circuit = QuantumCircuit(qr, anc, cr)
+
+# Initialize Quantum Walk (Coin Operator)
+for i in range(NUM_QUBITS):
+    sphinx_circuit.h(qr[i])  # Apply Hadamard to initialize superposition
+
+# 4D CTC Path Evolution (Controlled Phase Shifts)
+for i in range(NUM_GATES):
+    for j in range(NUM_QUBITS_PER_TARGET):
+        idx = i * NUM_QUBITS_PER_TARGET + j
+        sphinx_circuit.rz(2 * np.pi * (j / NUM_QUBITS_PER_TARGET), qr[idx])  # Phase shift for temporal evolution
+        sphinx_circuit.cx(qr[idx], anc[i])  # Control interactions with ancilla qubits
+
+# Machine Learning Feedback (Controlled Gates)
+for i in range(NUM_GATES):
+    for j in range(NUM_QUBITS_PER_TARGET):
+        idx = i * NUM_QUBITS_PER_TARGET + j
+        sphinx_circuit.ry(0.1 * j, qr[idx])  # Apply reinforcement learning-based rotation
+        sphinx_circuit.crz(0.05 * j, anc[i], qr[idx])  # Controlled rotation on feedback
+
+# Quantum Walk Propagation (m-shift Transformations)
+for i in range(NUM_GATES):
+    for j in range(NUM_QUBITS_PER_TARGET):
+        idx = i * NUM_QUBITS_PER_TARGET + j
+        sphinx_circuit.cx(qr[idx], qr[(idx + 1) % NUM_QUBITS])  # Connect temporal points
+        sphinx_circuit.rz(np.pi / 8, qr[idx])  # Apply m-shift transformation phase shift
+
+# Measurement
+sphinx_circuit.measure(qr, cr)  # Measure all qubits into classical register
+
+# Quantum Processor Simulation
+simulator = Aer.get_backend('qasm_simulator')
+compiled_circuit = transpile(sphinx_circuit, simulator)
+qobj = assemble(compiled_circuit)
+result = execute(sphinx_circuit, backend=simulator, shots=1024).result()
+
+# Get the measurement results
+counts = result.get_counts(sphinx_circuit)
+print("Measurement Results: ", counts)
+
+# Visualize the results
+plot_histogram(counts)
+plt.show()
+
+# Virtual Photon Propagation and Hardware Integration
+
+class Photon:
+    def __init__(self, position, mass, charge, oam_state, m_shift=0.1):
+        self.position = np.array(position)  # 4D position [x, y, z, t]
+        self.velocity = np.zeros(4)         # 4D velocity
+        self.mass = mass                    # Mass of the photon
+        self.charge = charge                # Charge of the photon
+        self.oam_state = oam_state          # Orbital Angular Momentum
+        self.m_shift = m_shift              # m-shift value
+
+# Gravitational force function with LQG consideration
+def improved_gravitational_force(photon1, photon2, lqg_scale=0.1):
+    G = 6.67430e-11  # Gravitational constant
+    distance = np.linalg.norm(photon1.position - photon2.position)
+    if distance == 0:
+        return np.zeros(4)
+
+    force_magnitude = -G * photon1.mass * photon2.mass / distance**2
+
+    # Introduce quantum fluctuations (random noise) for LQG consideration
+    fluctuation = np.random.normal(scale=lqg_scale, size=4)
+
+    unit_vector = (photon2.position - photon1.position) / distance
+    force = force_magnitude * unit_vector + fluctuation
+    return force
+
+# Electromagnetic force function (Coulomb's law)
+def electromagnetic_force(photon1, photon2):
+    k_e = 8.9875e9  # Coulomb's constant in N·m^2/C^2
+    distance = np.linalg.norm(photon1.position - photon2.position)
+    if distance == 0:
+        return np.zeros(4)
+
+    force_magnitude = k_e * photon1.charge * photon2.charge / distance**2
+    unit_vector = (photon2.position - photon1.position) / distance
+    force = force_magnitude * unit_vector
+    return force
+
+# Apply feedback loop to adjust photon state based on force calculations
+def apply_feedback(photon, photon2, dt, lqg_scale=0.1):
+    grav_force = improved_gravitational_force(photon, photon2, lqg_scale)
+    em_force = electromagnetic_force(photon, photon2)
+
+    total_force = grav_force + em_force
+    photon.velocity += total_force / photon.mass * dt
+    photon.position += photon.velocity * dt
+
+# Initialize ion trap gates at golden ratio positions
+def initialize_gates():
+    gates = []
+    for i in range(NUM_GATES):
+        t = i / NUM_GATES  # Normalize temporal position
+        spatial_scale = t * GOLDEN_RATIO
+        gate_position = [spatial_scale, spatial_scale**2, spatial_scale**3, t]
+        gates.append(np.array(gate_position))
+    return gates
+
+# Define quantum walk with m-shift
+def quantum_walk(photon, gates, num_steps):
+    positions = []
+    for step in range(num_steps):
+        # Apply m-shift
+        photon.position[:3] += photon.m_shift * np.random.uniform(-1, 1, size=3)
+        photon.position[3] += DT  # Increment time
+        
+        # Update photon state based on gate feedback
+        for gate in gates:
+            dist = np.linalg.norm(photon.position - gate)
+            if dist < 0.1:  # Interaction threshold
+                photon.oam_state += np.sin(dist)  # Example state update
+        
+        positions.append(photon.position.copy())
+    return np.array(positions)
+
+# Visualization of the quantum walk
+def visualize_walk(positions):
+    fig = plt.figure()
+    ax = fig.add_subplot(111, projection='3d')
+    ax.plot(positions[:, 0], positions[:, 1], positions[:, 2], c='blue', label='Quantum Walk')
+    ax.set_xlabel('X')
+    ax.set_ylabel('Y')
+    ax.set_zlabel('Z')
+    ax.set_title('4D Quantum Walk on CTC Path')
+    plt.legend()
+    plt.show()
+
+# Main simulation
+def run_simulation():
+    photon1 = Photon([0, 0, 0, 0], 1e-9, 1e-6, 0)  # Example initial photon
+    photon2 = Photon([4, 5, 6, 0], 1e-9, -1e-6, 0)  # Another photon for interaction
+    gates = initialize_gates()
+    positions = quantum_walk(photon1, gates, NUM_STEPS)
+    
+    # Simulate photon feedback adjustments in real-time
+    for step in range(NUM_STEPS):
+        apply_feedback(photon1, photon2, DT)
+        print(f"Step {step}: Photon1 Position: {photon1.position}")
+
+    visualize_walk(positions)
+
+# Execute simulation
+run_simulation()
