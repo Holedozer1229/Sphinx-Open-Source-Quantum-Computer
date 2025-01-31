@@ -1,65 +1,128 @@
-# Sphinx - Open Source Quantum Computer
+```markdown
+# Sphinx Quantum Operating System (SQOS) 🌌🌀
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.8+](https://img.shields.io/badge/Python-3.8%2B-blue.svg)](https://www.python.org/)
 
-A quantum computing framework integrating scalar field dynamics and 4D spacetime geometry, inspired by the *Scalar Waze* theory.
+**SQOS** is an open-source framework that unifies quantum computing, general relativity, and speculative spacetime physics through the *Scalar Waze* theory. Designed for researchers exploring closed timelike curves (CTCs), scalar field dynamics, and quantum teleportation in curved spacetime.
 
-## Features
-- **4D Quantum Walks**: Simulate particle dynamics in curved spacetime.
-- **M-Shift Operator**: Modify scalar field behavior in real-time.
-- **Hardware Integration**: Control ion traps via serial communication.
-- **Visualization**: 3D/4D plotting of quantum trajectories.
-- **Qiskit/Cirq Integration**: Run simulations using:
-- **IBM Quantum backends (Qiskit)
-- **Google Quantum AI processors (Cirq)
-- **Standard Gate Library**: M-Shift mapped to parametric rotations
-The Sphinx Quantum Computer is a sophisticated quantum computing system that utilizes OAM (Orbital Angular Momentum) modulated fiber optic arrays, trap ion gates, phosphorescent targets with quantum dots, and silicon drift detectors. This project simulates the quantum processes, including phase shifts, temporal displacement, and entanglement, using Qiskit and Python.
+---
 
-## Table of Contents
+## 🚀 Key Features
 
-1. [Introduction](#introduction)
-2. [Installation](#installation)
-3. [Usage](#usage)
-4. [Components](#components)
-5. [Simulation Details](#simulation-details)
-6. [Contributing](#contributing)
-7. [License](#license)
+- **Dynamic Nugget Field Evolution**  
+  Solve modified Klein-Gordon equations with CTC-coupled M-shift operators.
 
-## Introduction
+- **General Relativity Integration**  
+  Couple Einstein's equations to the Nugget field's stress-energy tensor.
 
-The Sphinx Quantum Computer project aims to model and simulate a quantum computing system that operates using advanced quantum hardware components. The simulation includes the following key features:
+- **Parametric CTC Feedback Loops**  
+  Implement golden-ratio-defined 4D CTC paths for retrocausal quantum protocols.
 
-- Induction of phase shifts on virtual photons in a CTC (Closed Timelike Curve) fiber optic path.
-- Utilization of trap ion gates for controlled interactions.
-- Phosphorescent targets with quantum dots for state manipulation and measurement.
-- Silicon drift detectors for entanglement and feedback.
+- **Quantum Teleportation Protocols**  
+  Test entanglement distribution under spacetime curvature effects.
 
-## Installation
+- **Hardware Emulation**  
+  FPGA/IBMQ-compatible simulation of relativistic quantum circuits.
 
-To run the Sphinx Quantum Computer simulation, follow these steps:
+---
 
-1. **Clone the repository**:
-    ```bash
-    git clone https://github.com/Holedozer1229/sphinx-quantum-computer.git
-    cd sphinx-quantum-computer
-    ```
-
-2. **Create a virtual environment** (optional but recommended):
-    ```bash
-    python -m venv venv
-    source venv/bin/activate  # On Windows use `venv\Scripts\activate`
-    ```
-
-3. **Install the required dependencies**:
-    ```bash
-    pip install -r requirements.txt
-    pip install qiskit cirq qiskit-aer
-    ```
-
-## Usage
-
-The main simulation script is `sphinx_simulation.py`. To run the simulation, use the following command:
+## 📦 Installation
 
 ```bash
-python sphinx_simulation.py
+# Clone repository
+git clone https://github.com/Holedozer1229/Sphinx---Open-Source-Quantum-Computer-.git
+cd Sphinx-Quantum-OS
+
+# Install dependencies
+pip install -r requirements.txt  # numpy, scipy, qiskit, matplotlib
+
+# Optional: Install GR solver (requires C++17)
+cd core/gr_integrator && make
+```
+
+---
+
+## 🧪 Quick Start
+
+### Basic Quantum Walk with CTC Feedback
+```python
+from core.quantum_protocols import QuantumWalkSimulator
+from core.field_solver import NuggetFieldSolver
+
+# Initialize Nugget field with CTC coupling
+solver = NuggetFieldSolver(lambda_ctc=0.5)
+phi = solver.solve()
+
+# Run 4D quantum walk
+sim = QuantumWalkSimulator(phi)
+path = sim.run(steps=100, m_shift=0.1)
+sim.visualize(path)
+```
+
+![4D Quantum Walk Visualization](docs/images/quantum_walk.png)
+
+---
+
+## 📚 Documentation
+
+| Component               | Description                          | API Reference              |
+|-------------------------|--------------------------------------|----------------------------|
+| **Nugget Field Solver** | Dynamic scalar field evolution       | [core/field_solver](docs/field_solver.md) |
+| **GR Integrator**       | Einstein-Nugget coupled equations    | [core/gr_integrator](docs/gr_integrator.md) |
+| **CTC Feedback**        | Golden ratio spacetime paths         | [core/quantum_protocols](docs/ctc_feedback.md) |
+
+---
+
+## 🌌 Advanced Usage
+
+### Full GR+Quantum Simulation
+```python
+from core.gr_integrator import EinsteinNuggetIntegrator
+from core.hardware_emulation import FPGAEmulator
+
+# Solve spacetime metric
+gr_integrator = EinsteinNuggetIntegrator()
+metric = gr_integrator.update_metric(phi)
+
+# Emulate on quantum hardware
+fpga = FPGAEmulator()
+result = fpga.run_teleportation(phi, metric)
+print("Teleportation fidelity:", result.fidelity)
+```
+
+---
+
+## 🤝 Contributing
+
+1. **Fork** the repository  
+2. Create a feature branch:  
+   `git checkout -b feature/ctc-optimization`  
+3. Submit a **Pull Request** with:  
+   - Tests in `/tests`  
+   - Documentation updates  
+   - Jupyter notebook examples  
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for coding standards.
+
+---
+
+## 📜 License
+
+MIT License - See [LICENSE](LICENSE) for details.
+
+---
+
+## 🔗 Related Work
+
+- **Scalar Waze Theory** (Original Manuscript)  
+- [Qiskit](https://qiskit.org/) - Quantum circuit framework  
+- [EinsteinPy](https://einsteinpy.org/) - General relativity utilities
+
+---
+
+**Author**: Travis D. Jones  
+**Contact**: [Project Discussions](https://github.com/Holedozer1229/Sphinx---Open-Source-Quantum-Computer-/discussions)  
+
+*"The universe is not only stranger than we imagine, it is stranger than we can imagine."* - J.B.S. Haldane
+```
