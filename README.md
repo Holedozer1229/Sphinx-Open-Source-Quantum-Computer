@@ -1,4 +1,15 @@
-# Sphinx---Open-Source-Quantum-Computer-# Sphinx Quantum Computer
+# Sphinx Open-Source Quantum Computer
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Python 3.8+](https://img.shields.io/badge/Python-3.8%2B-blue.svg)](https://www.python.org/)
+
+A quantum computing framework integrating scalar field dynamics and 4D spacetime geometry, inspired by the *Scalar Waze* theory.
+
+## Features
+- **4D Quantum Walks**: Simulate particle dynamics in curved spacetime.
+- **M-Shift Operator**: Modify scalar field behavior in real-time.
+- **Hardware Integration**: Control ion traps via serial communication.
+- **Visualization**: 3D/4D plotting of quantum trajectories.
 
 The Sphinx Quantum Computer is a sophisticated quantum computing system that utilizes OAM (Orbital Angular Momentum) modulated fiber optic arrays, trap ion gates, phosphorescent targets with quantum dots, and silicon drift detectors. This project simulates the quantum processes, including phase shifts, temporal displacement, and entanglement, using Qiskit and Python.
 
