@@ -60,7 +60,6 @@ path = sim.run(steps=100, m_shift=0.1)
 sim.visualize(path)
 ```
 
-![4D Quantum Walk Visualization](docs/images/quantum_walk.png)
 
 ---
 
