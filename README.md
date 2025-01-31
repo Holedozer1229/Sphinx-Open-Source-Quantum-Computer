@@ -31,7 +31,7 @@
 
 ```bash
 # Clone repository
-git clone https://github.com/Holedozer1229/Sphinx---Open-Source-Quantum-Computer-.git
+git clone https://github.com/Holedozer1229/Sphinx-Open-Source-Quantum-Computer.git
 cd Sphinx-Quantum-OS
 
 # Install dependencies
