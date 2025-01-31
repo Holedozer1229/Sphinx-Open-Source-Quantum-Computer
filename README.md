@@ -10,7 +10,10 @@ A quantum computing framework integrating scalar field dynamics and 4D spacetime
 - **M-Shift Operator**: Modify scalar field behavior in real-time.
 - **Hardware Integration**: Control ion traps via serial communication.
 - **Visualization**: 3D/4D plotting of quantum trajectories.
-
+- **Qiskit/Cirq Integration**: Run simulations using:
+- **IBM Quantum backends (Qiskit)
+- **Google Quantum AI processors (Cirq)
+- **Standard Gate Library**: M-Shift mapped to parametric rotations
 The Sphinx Quantum Computer is a sophisticated quantum computing system that utilizes OAM (Orbital Angular Momentum) modulated fiber optic arrays, trap ion gates, phosphorescent targets with quantum dots, and silicon drift detectors. This project simulates the quantum processes, including phase shifts, temporal displacement, and entanglement, using Qiskit and Python.
 
 ## Table of Contents
@@ -51,6 +54,7 @@ To run the Sphinx Quantum Computer simulation, follow these steps:
 3. **Install the required dependencies**:
     ```bash
     pip install -r requirements.txt
+    pip install qiskit cirq qiskit-aer
     ```
 
 ## Usage
