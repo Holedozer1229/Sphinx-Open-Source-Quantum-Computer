@@ -1,0 +1,76 @@
+# sphinx_quantum.py
+import numpy as np
+import serial
+import tkinter as tk
+from tkinter import messagebox
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
+import threading
+from qiskit import QuantumCircuit, Aer, execute
+import cirq
+
+# ... [Previous Constants and Serial Setup] ...
+
+# Quantum operator implementations for Qiskit/Cirq
+class QuantumFramework:
+    def __init__(self, framework: str = "qiskit"):
+        self.framework = framework
+        self.backend = Aer.get_backend('statevector_simulator') if framework == "qiskit" else None
+        
+    def coin_operator(self, state, m_shift: float):
+        """Implements coin operator in Qiskit/Cirq"""
+        if self.framework == "qiskit":
+            qc = QuantumCircuit(2)
+            qc.h(0)  # Hadamard gate for quantum walk
+            qc.ry(m_shift * np.pi, 1)  # M-shift as rotation
+            return qc
+        elif self.framework == "cirq":
+            qubits = cirq.LineQubit.range(2)
+            return cirq.Circuit(
+                cirq.H(qubits[0]),
+                cirq.ry(m_shift * np.pi)(qubits[1])
+            )
+
+    def time_operator(self, state, temporal_displacement: float):
+        """Implements time evolution operator"""
+        if self.framework == "qiskit":
+            qc = QuantumCircuit(2)
+            qc.rx(temporal_displacement * np.pi, 0)
+            return qc
+        elif self.framework == "cirq":
+            qubits = cirq.LineQubit.range(2)
+            return cirq.Circuit(
+                cirq.rx(temporal_displacement * np.pi)(qubits[0])
+            )
+
+    def execute_circuit(self, circuit):
+        """Runs simulation on selected backend"""
+        if self.framework == "qiskit":
+            job = execute(circuit, self.backend)
+            return job.result().get_statevector()
+        elif self.framework == "cirq":
+            sim = cirq.Simulator()
+            return sim.simulate(circuit).final_state_vector
+
+# Modified simulation function
+def run_simulation(steps: int, m_shift: float, framework: str = "qiskit"):
+    global quantum_processing_active
+    qf = QuantumFramework(framework)
+    state = initial_position[:2]  # Map 4D state to 2-qubit system
+    
+    path = []
+    for step in range(steps):
+        if not quantum_processing_active:
+            break
+        
+        # Build quantum circuit
+        circuit = qf.coin_operator(state, m_shift)
+        circuit += qf.time_operator(state, temporal_displacement)
+        
+        # Execute and get new state
+        state = qf.execute_circuit(circuit)
+        path.append(np.concatenate([np.real(state), [step * 0.1, 0]]))  # 4D coordinates
+        
+    return np.array(path)
+
+# ... [Rest of GUI and Visualization Code Remains Similar] ...
