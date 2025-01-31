@@ -1,0 +1,13 @@
+
+### **1. Core Architecture**
+```text
+SQOS/
+├── core/
+│   ├── field_solver/          # Dynamic Nugget Field Evolution
+│   ├── gr_integrator/         # Full General Relativity (GR) Solver
+│   ├── quantum_protocols/     # CTC Feedback & Teleportation
+│   └── hardware_emulation/    # FPGA/Quantum Hardware Interface
+├── docs/                      # Theory & API Documentation
+├── examples/                  # Jupyter Notebooks & Demos
+└── tests/                     # Unit/Integration Tests
+```
