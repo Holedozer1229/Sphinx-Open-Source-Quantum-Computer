@@ -1,0 +1,165 @@
+import numpy as np
+import serial
+import tkinter as tk
+from tkinter import messagebox
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
+import threading
+
+# Constants
+DECAY_FACTOR = 0.99
+GOLDEN_RATIO = (1 + np.sqrt(5)) / 2
+DEFAULT_STEPS = 100
+DEFAULT_M_SHIFT = 0.1
+
+# Serial communication setup with error handling
+serial_ports = [f"/dev/ttyS{i}" for i in range(16)]  # Adjust ports as needed
+ion_trap_gates = []
+for port in serial_ports:
+    try:
+        gate = serial.Serial(port, 9600, timeout=1)
+        ion_trap_gates.append(gate)
+    except serial.SerialException:
+        print(f"Port {port} unavailable")
+
+# Quantum processing state
+quantum_processing_active = False
+
+# Initial configuration
+initial_position = np.array([0.0, 0.0, 0.0, 0.0])  # 4D spacetime coordinates
+target_state = np.array([GOLDEN_RATIO, 1.0, 1/GOLDEN_RATIO, 0.5])
+
+# Quantum operators (fixed mathematical consistency)
+def coin_operator(state, m_shift: float):
+    H = np.array([[1, 1], [1, -1]]) / np.sqrt(2)
+    return np.dot(H, state) + m_shift * np.ones_like(state)  # Valid vector addition
+
+def time_operator(state, temporal_displacement: float):
+    return state * DECAY_FACTOR + temporal_displacement * np.ones(4)
+
+def feedback_fn(state, feedback_data, feedback_strength: float):
+    reward = -np.linalg.norm(state - target_state)
+    return state + reward * feedback_strength * feedback_data
+
+# Improved feedback handling
+def read_fiber_optic_feedback():
+    feedback_data = []
+    for gate in ion_trap_gates:
+        try:
+            data = gate.readline().decode('utf-8').strip()
+            feedback_data.append(float(data) if data else 0.0)
+        except (ValueError, UnicodeDecodeError, serial.SerialException):
+            feedback_data.append(0.0)
+    return np.array(feedback_data)
+
+# Threaded simulation to prevent GUI blocking
+def run_simulation(steps: int, m_shift: float, feedback_strength: float, temporal_displacement: float):
+    global quantum_processing_active
+    position = initial_position.copy()
+    path = []
+
+    for step in range(steps):
+        if not quantum_processing_active:
+            break
+        position = time_operator(
+            coin_operator(position, m_shift),
+            temporal_displacement
+        )
+        feedback_data = read_fiber_optic_feedback()
+        position = feedback_fn(position, feedback_data, feedback_strength)
+        path.append(position)
+        print(f"Step {step+1}: Position {position}")
+    return np.array(path)
+
+# Enhanced 4D visualization
+def visualize_path(quantum_path):
+    fig = plt.figure()
+    ax = fig.add_subplot(111, projection='3d')
+    sc = ax.scatter(
+        quantum_path[:, 0], quantum_path[:, 1], quantum_path[:, 2],
+        c=quantum_path[:, 3], cmap='viridis', label="Temporal Displacement"
+    )
+    plt.colorbar(sc, label="Time Coordinate")
+    ax.set_xlabel('X')
+    ax.set_ylabel('Y')
+    ax.set_zlabel('Z')
+    plt.title("4D Quantum Walk with M-Shift Feedback")
+    plt.legend()
+    plt.show()
+
+# GUI with input validation and resource cleanup
+class QuantumControlGUI:
+    def __init__(self, root):
+        self.root = root
+        self.root.title("Sphinx AGI Quantum Control")
+        self.m_shift = DEFAULT_M_SHIFT
+        self.feedback_strength = 0.02
+        self.temporal_displacement = 0.05
+        self.setup_gui()
+        
+        # Cleanup on exit
+        self.root.protocol("WM_DELETE_WINDOW", self.on_close)
+
+    def setup_gui(self):
+        # Input fields
+        tk.Label(self.root, text="Steps:").grid(row=0, column=0, padx=5, pady=5)
+        self.step_entry = tk.Entry(self.root)
+        self.step_entry.insert(0, str(DEFAULT_STEPS))
+        self.step_entry.grid(row=0, column=1, padx=5, pady=5)
+
+        tk.Label(self.root, text="M-Shift:").grid(row=1, column=0, padx=5, pady=5)
+        self.m_shift_entry = tk.Entry(self.root)
+        self.m_shift_entry.insert(0, str(DEFAULT_M_SHIFT))
+        self.m_shift_entry.grid(row=1, column=1, padx=5, pady=5)
+
+        # Buttons
+        tk.Button(self.root, text="Start", command=self.start_processing).grid(row=2, column=0, padx=5, pady=5)
+        tk.Button(self.root, text="Stop", command=self.stop_processing).grid(row=2, column=1, padx=5, pady=5)
+        tk.Button(self.root, text="Adjust M-Shift", command=self.adjust_m_shift).grid(row=3, column=0, padx=5, pady=5)
+        tk.Button(self.root, text="Entanglement", command=self.activate_entanglement).grid(row=3, column=1, padx=5, pady=5)
+
+    def start_processing(self):
+        global quantum_processing_active
+        try:
+            steps = int(self.step_entry.get())
+            quantum_processing_active = True
+            thread = threading.Thread(
+                target=lambda: visualize_path(
+                    run_simulation(steps, self.m_shift, self.feedback_strength, self.temporal_displacement)
+                )
+            )
+            thread.start()
+        except ValueError:
+            messagebox.showerror("Error", "Invalid input: steps must be an integer.")
+
+    def stop_processing(self):
+        global quantum_processing_active
+        quantum_processing_active = False
+
+    def adjust_m_shift(self):
+        try:
+            self.m_shift = float(self.m_shift_entry.get())
+            messagebox.showinfo("Success", f"M-Shift updated to {self.m_shift}")
+        except ValueError:
+            messagebox.showerror("Error", "M-Shift must be a numeric value.")
+
+    def activate_entanglement(self):
+        for gate in ion_trap_gates:
+            if gate.is_open:
+                try:
+                    gate.write(b"ENTANGLE\n")
+                except serial.SerialException:
+                    print(f"Failed to send command to {gate.port}")
+
+    def on_close(self):
+        global quantum_processing_active
+        quantum_processing_active = False
+        for gate in ion_trap_gates:
+            if gate.is_open:
+                gate.close()
+        self.root.destroy()
+
+if __name__ == "__main__":
+    root = tk.Tk()
+    app = QuantumControlGUI(root)
+    root.mainloop()
