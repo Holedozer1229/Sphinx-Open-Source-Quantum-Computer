@@ -1,0 +1,27 @@
+### **3. Full GR Integration**
+#### **Einstein-Nugget Coupled Solver**  
+Solve \(G_{\mu\nu} = 8\pi T_{\mu\nu}(\Phi)\) using iterative relaxation.  
+**Code**: `core/gr_integrator/einstein_nugget.py`
+```python
+import numpy as np
+from pygr import EinsteinSolver  # Hypothetical GR library
+
+class EinsteinNuggetIntegrator:
+    def __init__(self, phi_solver):
+        self.phi_solver = phi_solver  # NuggetFieldSolver instance
+        
+    def stress_energy(self, phi, dphi_dx):
+        # Compute T_mu_nu from Nugget field
+        return np.outer(dphi_dx, dphi_dx) - 0.5 * np.eye(4) * (np.sum(dphi_dx**2) + self.phi_solver.m**2 * phi**2)
+    
+    def update_metric(self, phi, tolerance=1e-6):
+        # Iteratively solve Einstein equations
+        metric = np.diag([-1, 1, 1, 1])  # Minkowski initial guess
+        for _ in range(100):
+            T_munu = self.stress_energy(phi, np.gradient(phi))
+            new_metric = EinsteinSolver.solve(metric, T_munu)
+            if np.max(np.abs(new_metric - metric)) < tolerance:
+                break
+            metric = new_metric
+        return metric
+```
