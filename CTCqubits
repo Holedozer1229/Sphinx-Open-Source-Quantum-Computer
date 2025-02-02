@@ -1,0 +1,93 @@
+import numpy as np
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
+from scipy.linalg import expm
+
+# Constants (Mathematically consistent)
+GOLDEN_ANGLE = np.pi * (3 - np.sqrt(5))  # Optimal phyllotactic spacing
+PROPER_TIME_STEPS = 100                  # Temporal resolution
+PLANCK_UNIT = 1.0                        # Natural unit scaling
+
+# 4D CTC Generator (Closed loop in spacetime)
+def generate_ctc(steps=PROPER_TIME_STEPS):
+    τ = np.linspace(0, 2*np.pi, steps)
+    worldline = np.zeros((len(τ), 4))
+    
+    # Toroidal coordinates with temporal closure
+    R, r = 1.5, 0.5  # Major/minor radii
+    ω = 3            # Winding number
+    
+    worldline[:,0] = (R + r*np.cos(ω*τ)) * np.cos(τ)  # X
+    worldline[:,1] = (R + r*np.cos(ω*τ)) * np.sin(τ)  # Y
+    worldline[:,2] = r * np.sin(ω*τ)                  # Z
+    worldline[:,3] = τ/(2*np.pi)                      # Normalized temporal parameter
+    
+    return worldline
+
+# Quantum Dynamics Operator
+class CTCQubitField:
+    def __init__(self, worldline):
+        self.worldline = worldline
+        self.n = len(worldline)
+        self.H = self._build_hamiltonian()
+        
+    def _build_hamiltonian(self):
+        """Construct nearest-neighbor coupling Hamiltonian"""
+        H = np.zeros((self.n, self.n), dtype=complex)
+        
+        # Parallel transport operator with periodic boundary
+        for i in range(self.n):
+            j = (i + 1) % self.n
+            Δx = self.worldline[j,:3] - self.worldline[i,:3]
+            Δt = self.worldline[j,3] - self.worldline[i,3]
+            
+            # Causal structure preservation
+            interval = Δt**2 - np.dot(Δx, Δx)
+            phase = np.sqrt(abs(interval)) * np.sign(interval) / PLANCK_UNIT
+            H[i,j] = H[j,i] = np.exp(-1j * phase)
+        
+        # Curvature potential term
+        np.fill_diagonal(H, -1j * np.linalg.norm(self.worldline[:,:3], axis=1))
+        return H
+    
+    def propagate(self, ψ0, τ):
+        """Unitary time evolution operator"""
+        return expm(-1j * self.H * τ) @ ψ0
+
+# Generate closed timelike curve
+ctc = generate_ctc()
+
+# Initialize quantum field
+qfield = CTCQubitField(ctc)
+
+# Prepare initial state (Temporal Gaussian wavepacket)
+ψ0 = np.exp(-(np.linspace(0, 1, PROPER_TIME_STEPS) - 0.5)**2 / 0.1**2)
+ψ0 = ψ0.astype(complex) / np.linalg.norm(ψ0)
+
+# Evolve quantum state through complete CTC cycle
+ψ_final = qfield.propagate(ψ0, 2*np.pi)
+prob = np.abs(ψ_final)**2
+
+# Visualization
+fig = plt.figure(figsize=(16, 8))
+
+# 3D Spacetime Projection
+ax1 = fig.add_subplot(121, projection='3d')
+sc = ax1.scatter(ctc[:,0], ctc[:,1], ctc[:,2], c=prob,
+                cmap='plasma', s=50*prob, alpha=0.8,
+                norm=None)
+ax1.plot(ctc[:,0], ctc[:,1], ctc[:,2], 'w--', lw=0.5, alpha=0.3)
+fig.colorbar(sc, ax=ax1, label='Probability Density')
+ax1.set_title('Quantum State Evolution on CTC')
+
+# Temporal Distribution
+ax2 = fig.add_subplot(122)
+ax2.plot(ctc[:,3], prob, 'c-', lw=2)
+ax2.fill_between(ctc[:,3], prob, alpha=0.2, color='cyan')
+ax2.set_xlabel('Normalized Proper Time (τ)')
+ax2.set_ylabel('Probability Amplitude')
+ax2.set_title('Temporal Probability Distribution')
+ax2.grid(alpha=0.3)
+
+plt.tight_layout()
+plt.show()
